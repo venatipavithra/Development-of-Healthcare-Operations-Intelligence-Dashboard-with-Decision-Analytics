@@ -5,6 +5,7 @@ require("dotenv").config();
 
 const patientRoutes = require("./routes/patientRoutes");
 const staffRoutes = require("./routes/staffRoutes");
+const billingRoutes = require("./routes/billingRoutes");
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use(cors());
 
 app.use("/api/patients", patientRoutes);
 app.use("/api/staff", staffRoutes);
+app.use("/api/billing", billingRoutes);
 
 mongoose.connect(process.env.MONGO_URI)
     .then(() => {

@@ -3,6 +3,7 @@ import { useState } from "react";
 import Dashboard from "./Dashboard";
 import Patient from "./Patient";
 import Staff from "./Staff";
+import Billing from "./Billing";
 import Sidebar from "./Sidebar";
 
 function App() {
@@ -21,6 +22,10 @@ function App() {
 
         if (page === "staff") {
             return <Staff />;
+        }
+
+        if (page === "billing") {
+             return <Billing />;
         }
 
         return (
