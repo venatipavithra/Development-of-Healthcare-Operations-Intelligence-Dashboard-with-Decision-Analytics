@@ -3,6 +3,9 @@ import { useEffect, useState } from "react";
 function Dashboard() {
 
     const [patients, setPatients] = useState([]);
+    const [staff, setStaff] = useState([]);
+    const [bills, setBills] = useState([]);
+    const [claims, setClaims] = useState([]);
 
     useEffect(() => {
 
@@ -12,22 +15,58 @@ function Dashboard() {
                 setPatients(data);
             })
             .catch((error) => {
-                console.log(error);
+                console.log("Patient error:", error);
+            });
+
+
+        fetch("http://localhost:5000/api/staff")
+            .then((response) => response.json())
+            .then((data) => {
+                setStaff(data);
+            })
+            .catch((error) => {
+                console.log("Staff error:", error);
+            });
+
+
+        fetch("http://localhost:5000/api/billing")
+            .then((response) => response.json())
+            .then((data) => {
+                setBills(data);
+            })
+            .catch((error) => {
+                console.log("Billing error:", error);
+            });
+
+
+        fetch("http://localhost:5000/api/claims")
+            .then((response) => response.json())
+            .then((data) => {
+                setClaims(data);
+            })
+            .catch((error) => {
+                console.log("Claims error:", error);
             });
 
     }, []);
+
+
+    // PATIENT CALCULATIONS
 
     const totalPatients = patients.length;
 
     const malePatients = patients.filter(
         (patient) =>
+            patient.gender &&
             patient.gender.toLowerCase() === "male"
     ).length;
 
     const femalePatients = patients.filter(
         (patient) =>
+            patient.gender &&
             patient.gender.toLowerCase() === "female"
     ).length;
+
 
     const departments = [
         ...new Set(
@@ -37,12 +76,91 @@ function Dashboard() {
         )
     ];
 
+    const allDepartments = [
+    ...new Set([
+        ...patients.map(
+            (patient) => patient.department
+        ),
+        ...staff.map(
+            (member) => member.department
+        )
+    ])
+];
+
+
+    // BILLING CALCULATIONS
+
+    const totalBills = bills.length;
+
+    const totalRevenue = bills.reduce(
+        (sum, bill) =>
+            sum + Number(
+                bill.paidAmount || 0
+            ),
+        0
+    );
+
+
+    const totalBilled = bills.reduce(
+        (sum, bill) =>
+            sum + Number(
+                bill.amount || 0
+            ),
+        0
+    );
+
+
+    const outstandingAmount =
+        totalBilled - totalRevenue;
+
+
+    // CLAIM CALCULATIONS
+
+    const totalClaims = claims.length;
+
+    const approvedClaims = claims.filter(
+        (claim) =>
+            claim.claimStatus === "Approved"
+    ).length;
+
+
+    const deniedClaims = claims.filter(
+        (claim) =>
+            claim.claimStatus === "Denied"
+    ).length;
+
+    // OPERATIONAL HEALTH SCORE
+
+let operationalHealthScore = 100;
+
+if (totalPatients > 0) {
+    operationalHealthScore -= 10;
+}
+
+if (staff.length === 0) {
+    operationalHealthScore -= 20;
+}
+
+if (deniedClaims > 0) {
+    operationalHealthScore -= 10;
+}
+
+if (outstandingAmount > 0) {
+    operationalHealthScore -= 10;
+}
+
+if (operationalHealthScore < 0) {
+    operationalHealthScore = 0;
+}
+
+
     return (
 
         <div style={{
             padding: "30px",
             fontFamily: "Arial"
         }}>
+
 
             {/* HEADER */}
 
@@ -56,7 +174,8 @@ function Dashboard() {
 
             <hr />
 
-            {/* KPI CARDS */}
+
+            {/* MAIN KPI CARDS */}
 
             <div style={{
                 display: "flex",
@@ -65,6 +184,9 @@ function Dashboard() {
                 marginTop: "30px"
             }}>
 
+
+                {/* PATIENTS */}
+
                 <div style={{
                     border: "1px solid #ccc",
                     padding: "20px",
@@ -72,7 +194,9 @@ function Dashboard() {
                     borderRadius: "10px"
                 }}>
 
-                    <h3>Total Patients</h3>
+                    <h3>
+                        Total Patients
+                    </h3>
 
                     <h1>
                         {totalPatients}
@@ -81,21 +205,7 @@ function Dashboard() {
                 </div>
 
 
-                <div style={{
-                    border: "1px solid #ccc",
-                    padding: "20px",
-                    width: "200px",
-                    borderRadius: "10px"
-                }}>
-
-                    <h3>Male Patients</h3>
-
-                    <h1>
-                        {malePatients}
-                    </h1>
-
-                </div>
-
+                {/* STAFF */}
 
                 <div style={{
                     border: "1px solid #ccc",
@@ -104,14 +214,18 @@ function Dashboard() {
                     borderRadius: "10px"
                 }}>
 
-                    <h3>Female Patients</h3>
+                    <h3>
+                        Total Staff
+                    </h3>
 
                     <h1>
-                        {femalePatients}
+                        {staff.length}
                     </h1>
 
                 </div>
 
+
+                {/* BILLS */}
 
                 <div style={{
                     border: "1px solid #ccc",
@@ -120,13 +234,232 @@ function Dashboard() {
                     borderRadius: "10px"
                 }}>
 
-                    <h3>Departments</h3>
+                    <h3>
+                        Total Bills
+                    </h3>
 
                     <h1>
-                        {departments.length}
+                        {totalBills}
                     </h1>
 
                 </div>
+
+
+                {/* CLAIMS */}
+
+                <div style={{
+                    border: "1px solid #ccc",
+                    padding: "20px",
+                    width: "200px",
+                    borderRadius: "10px"
+                }}>
+
+                    <h3>
+                        Total Claims
+                    </h3>
+
+                    <h1>
+                        {totalClaims}
+                    </h1>
+
+                </div>
+
+            </div>
+
+            {/* OPERATIONAL HEALTH */}
+
+<div style={{
+    marginTop: "30px",
+    border: "1px solid #ccc",
+    padding: "25px",
+    borderRadius: "10px"
+}}>
+
+    <h2>
+        Operational Health Score
+    </h2>
+
+    <h1>
+        {operationalHealthScore}/100
+    </h1>
+
+    <p>
+        Based on current patient, staff,
+        billing and claims information.
+    </p>
+
+</div>
+
+
+            {/* REVENUE KPI CARDS */}
+
+            <div style={{
+                display: "flex",
+                gap: "20px",
+                flexWrap: "wrap",
+                marginTop: "25px"
+            }}>
+
+
+                <div style={{
+                    border: "1px solid #ccc",
+                    padding: "20px",
+                    width: "250px",
+                    borderRadius: "10px"
+                }}>
+
+                    <h3>
+                        Total Revenue
+                    </h3>
+
+                    <h1>
+                        ₹{totalRevenue.toLocaleString()}
+                    </h1>
+
+                </div>
+
+
+                <div style={{
+                    border: "1px solid #ccc",
+                    padding: "20px",
+                    width: "250px",
+                    borderRadius: "10px"
+                }}>
+
+                    <h3>
+                        Outstanding Amount
+                    </h3>
+
+                    <h1>
+                        ₹{outstandingAmount.toLocaleString()}
+                    </h1>
+
+                </div>
+
+
+                <div style={{
+                    border: "1px solid #ccc",
+                    padding: "20px",
+                    width: "250px",
+                    borderRadius: "10px"
+                }}>
+
+                    <h3>
+                        Approved Claims
+                    </h3>
+
+                    <h1>
+                        {approvedClaims}
+                    </h1>
+
+                </div>
+
+
+                <div style={{
+                    border: "1px solid #ccc",
+                    padding: "20px",
+                    width: "250px",
+                    borderRadius: "10px"
+                }}>
+
+                    <h3>
+                        Denied Claims
+                    </h3>
+
+                    <h1>
+                        {deniedClaims}
+                    </h1>
+
+                </div>
+
+            </div>
+
+
+            {/* PATIENT OVERVIEW */}
+
+            <div style={{
+                marginTop: "40px"
+            }}>
+
+                <h2>
+                    Patient Overview
+                </h2>
+
+                <table
+                    border="1"
+                    cellPadding="12"
+                    width="100%"
+                >
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Metric
+                            </th>
+
+                            <th>
+                                Value
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        <tr>
+
+                            <td>
+                                Total Patients
+                            </td>
+
+                            <td>
+                                {totalPatients}
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>
+                                Male Patients
+                            </td>
+
+                            <td>
+                                {malePatients}
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>
+                                Female Patients
+                            </td>
+
+                            <td>
+                                {femalePatients}
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>
+                                Departments
+                            </td>
+
+                            <td>
+                                {departments.length}
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
 
             </div>
 
@@ -150,9 +483,19 @@ function Dashboard() {
                     <thead>
 
                         <tr>
-                            <th>Metric</th>
-                            <th>Value</th>
-                            <th>Status</th>
+
+                            <th>
+                                Metric
+                            </th>
+
+                            <th>
+                                Value
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
                         </tr>
 
                     </thead>
@@ -160,27 +503,70 @@ function Dashboard() {
                     <tbody>
 
                         <tr>
-                            <td>Patient Volume</td>
-                            <td>{totalPatients}</td>
-                            <td>Normal</td>
+
+                            <td>
+                                Patient Volume
+                            </td>
+
+                            <td>
+                                {totalPatients}
+                            </td>
+
+                            <td>
+                                Monitoring
+                            </td>
+
                         </tr>
 
-                        <tr>
-                            <td>Appointments</td>
-                            <td>0</td>
-                            <td>Monitoring</td>
-                        </tr>
 
                         <tr>
-                            <td>Bed Utilization</td>
-                            <td>0%</td>
-                            <td>Monitoring</td>
+
+                            <td>
+                                Staff Count
+                            </td>
+
+                            <td>
+                                {staff.length}
+                            </td>
+
+                            <td>
+                                Monitoring
+                            </td>
+
                         </tr>
 
+
                         <tr>
-                            <td>Staff Utilization</td>
-                            <td>0%</td>
-                            <td>Monitoring</td>
+
+                            <td>
+                                Billing Records
+                            </td>
+
+                            <td>
+                                {totalBills}
+                            </td>
+
+                            <td>
+                                Monitoring
+                            </td>
+
+                        </tr>
+
+
+                        <tr>
+
+                            <td>
+                                Insurance Claims
+                            </td>
+
+                            <td>
+                                {totalClaims}
+                            </td>
+
+                            <td>
+                                Monitoring
+                            </td>
+
                         </tr>
 
                     </tbody>
@@ -190,108 +576,214 @@ function Dashboard() {
             </div>
 
 
-            {/* DEPARTMENT PERFORMANCE */}
+            {/* DEPARTMENT INTELLIGENCE */}
 
-            <div style={{
-                marginTop: "40px"
-            }}>
+<div style={{
+    marginTop: "40px"
+}}>
 
-                <h2>
-                    Department Performance
-                </h2>
+    <h2>
+        Department Intelligence
+    </h2>
 
-                {departments.map(
-                    (department) => {
+    <table
+        border="1"
+        cellPadding="12"
+        width="100%"
+    >
 
-                        const count =
-                            patients.filter(
-                                (patient) =>
-                                    patient.department === department
-                            ).length;
+        <thead>
 
-                        const percentage =
-                            totalPatients > 0
-                                ? (count / totalPatients) * 100
-                                : 0;
+            <tr>
 
-                        return (
+                <th>
+                    Department
+                </th>
 
-                            <div
-                                key={department}
-                                style={{
-                                    marginBottom: "20px"
-                                }}
-                            >
+                <th>
+                    Patients
+                </th>
 
+                <th>
+                    Staff
+                </th>
+
+                <th>
+                    Patient Percentage
+                </th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {allDepartments.map(
+                (department) => {
+
+                    const patientCount =
+                        patients.filter(
+                            (patient) =>
+                                patient.department === department
+                        ).length;
+
+                    const staffCount =
+                        staff.filter(
+                            (member) =>
+                                member.department === department
+                        ).length;
+
+                    const percentage =
+                        totalPatients > 0
+                            ? (
+                                patientCount /
+                                totalPatients
+                            ) * 100
+                            : 0;
+
+                    return (
+
+                        <tr key={department}>
+
+                            <td>
                                 <strong>
                                     {department}
                                 </strong>
+                            </td>
 
-                                <span style={{
-                                    marginLeft: "20px"
-                                }}>
-                                    {count} patients
-                                </span>
+                            <td>
+                                {patientCount}
+                            </td>
 
-                                <div style={{
-                                    width: "100%",
-                                    height: "20px",
-                                    border: "1px solid #ccc",
-                                    marginTop: "8px"
-                                }}>
+                            <td>
+                                {staffCount}
+                            </td>
 
-                                    <div style={{
-                                        width: `${percentage}%`,
-                                        height: "100%",
-                                        backgroundColor: "steelblue"
-                                    }}>
-                                    </div>
+                            <td>
+                                {percentage.toFixed(1)}%
+                            </td>
 
-                                </div>
+                        </tr>
 
-                            </div>
+                    );
 
-                        );
+                }
+            )}
 
-                    }
-                )}
+        </tbody>
 
-            </div>
+    </table>
+
+</div>
 
 
-            {/* ALERTS */}
+            {/* EXECUTIVE SUMMARY */}
 
             <div style={{
-                marginTop: "40px"
+                marginTop: "40px",
+                border: "1px solid #ccc",
+                padding: "20px",
+                borderRadius: "10px"
             }}>
 
                 <h2>
-                    Operational Alerts
+                    Executive Summary
                 </h2>
 
-                <ul>
+                <p>
+                    The dashboard currently monitors
+                    patient volume, staff availability,
+                    billing activity and insurance claims.
+                </p>
 
-                    <li>
-                        Patient volume monitoring active
-                    </li>
+                <p>
+                    Total patient records:
+                    {" "}
+                    <strong>{totalPatients}</strong>
+                </p>
 
-                    <li>
-                        Bed utilization monitoring active
-                    </li>
+                <p>
+                    Total staff records:
+                    {" "}
+                    <strong>{staff.length}</strong>
+                </p>
 
-                    <li>
-                        Staff utilization monitoring active
-                    </li>
+                <p>
+                    Total revenue collected:
+                    {" "}
+                    <strong>
+                        ₹{totalRevenue.toLocaleString()}
+                    </strong>
+                </p>
 
-                    <li>
-                        Revenue monitoring active
-                    </li>
-
-                </ul>
+                <p>
+                    Outstanding amount:
+                    {" "}
+                    <strong>
+                        ₹{outstandingAmount.toLocaleString()}
+                    </strong>
+                </p>
 
             </div>
 
+
+            {/* EXECUTIVE ALERTS */}
+
+<div style={{
+    marginTop: "40px",
+    border: "1px solid #ccc",
+    padding: "20px",
+    borderRadius: "10px"
+}}>
+
+    <h2>
+        Executive Alerts
+    </h2>
+
+    {totalPatients === 0 && (
+        <p>
+            ⚠️ No patient records available.
+        </p>
+    )}
+
+    {staff.length === 0 && (
+        <p>
+            ⚠️ No staff records available.
+        </p>
+    )}
+
+    {outstandingAmount > 0 && (
+        <p>
+            ⚠️ Outstanding billing amount:
+            {" "}
+            <strong>
+                ₹{outstandingAmount.toLocaleString()}
+            </strong>
+        </p>
+    )}
+
+    {deniedClaims > 0 && (
+        <p>
+            ⚠️ {deniedClaims} insurance claim(s)
+            require attention.
+        </p>
+    )}
+
+    {totalPatients > 0 &&
+        staff.length > 0 &&
+        outstandingAmount === 0 &&
+        deniedClaims === 0 && (
+            <p>
+                ✅ Current operational indicators
+                are within the monitored range.
+            </p>
+        )
+    }
+
+</div>
+
         </div>
+
     );
 }
 
