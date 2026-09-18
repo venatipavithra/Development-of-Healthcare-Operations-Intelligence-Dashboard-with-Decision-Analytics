@@ -20,6 +20,101 @@ function Staff() {
 
     const [editId, setEditId] = useState(null);
 
+    // STAFF INTELLIGENCE CALCULATIONS
+
+const averageAttendance =
+    staff.length > 0
+        ? staff.reduce(
+            (sum, person) =>
+                sum + Number(person.attendance || 0),
+            0
+        ) / staff.length
+        : 0;
+
+const averageWorkload =
+    staff.length > 0
+        ? staff.reduce(
+            (sum, person) =>
+                sum + Number(person.workload || 0),
+            0
+        ) / staff.length
+        : 0;
+
+const averageProductivity =
+    staff.length > 0
+        ? staff.reduce(
+            (sum, person) =>
+                sum + Number(person.productivity || 0),
+            0
+        ) / staff.length
+        : 0;
+
+const highWorkloadStaff = staff.filter(
+    (person) =>
+        Number(person.workload || 0) > 80
+).length;
+
+const lowAttendanceStaff = staff.filter(
+    (person) =>
+        Number(person.attendance || 0) < 75
+).length;
+
+const lowProductivityStaff = staff.filter(
+    (person) =>
+        Number(person.productivity || 0) < 60
+).length;
+
+// DEPARTMENT-WISE STAFF INTELLIGENCE
+
+const departments = [
+    ...new Set(
+        staff.map(
+            (person) => person.department
+        )
+    )
+];
+
+const departmentStats = departments.map(
+    (department) => {
+
+        const departmentStaff = staff.filter(
+            (person) =>
+                person.department === department
+        );
+
+        const count = departmentStaff.length;
+
+        const attendance =
+            departmentStaff.reduce(
+                (sum, person) =>
+                    sum + Number(person.attendance || 0),
+                0
+            ) / count;
+
+        const workload =
+            departmentStaff.reduce(
+                (sum, person) =>
+                    sum + Number(person.workload || 0),
+                0
+            ) / count;
+
+        const productivity =
+            departmentStaff.reduce(
+                (sum, person) =>
+                    sum + Number(person.productivity || 0),
+                0
+            ) / count;
+
+        return {
+            department,
+            count,
+            attendance,
+            workload,
+            productivity
+        };
+    }
+);
+
     // GET STAFF
     const fetchStaff = async () => {
 
@@ -332,6 +427,77 @@ function Staff() {
             }%
 
         </h1>
+
+    </div>
+
+</div>
+
+{/* STAFF ALERT KPI CARDS */}
+
+<div style={{
+    display: "flex",
+    gap: "20px",
+    flexWrap: "wrap",
+    marginTop: "20px",
+    marginBottom: "30px"
+}}>
+
+    <div style={{
+        border: "1px solid #ccc",
+        padding: "20px",
+        width: "200px",
+        borderRadius: "10px"
+    }}>
+
+        <h3>High Workload</h3>
+
+        <h1>
+            {highWorkloadStaff}
+        </h1>
+
+        <p>
+            Staff above 80% workload
+        </p>
+
+    </div>
+
+
+    <div style={{
+        border: "1px solid #ccc",
+        padding: "20px",
+        width: "200px",
+        borderRadius: "10px"
+    }}>
+
+        <h3>Low Attendance</h3>
+
+        <h1>
+            {lowAttendanceStaff}
+        </h1>
+
+        <p>
+            Staff below 75% attendance
+        </p>
+
+    </div>
+
+
+    <div style={{
+        border: "1px solid #ccc",
+        padding: "20px",
+        width: "200px",
+        borderRadius: "10px"
+    }}>
+
+        <h3>Low Productivity</h3>
+
+        <h1>
+            {lowProductivityStaff}
+        </h1>
+
+        <p>
+            Staff below 60% productivity
+        </p>
 
     </div>
 
@@ -651,6 +817,116 @@ function Staff() {
                 )}
 
             </div>
+
+            {/* DEPARTMENT STAFF INTELLIGENCE */}
+
+<div style={{
+    marginTop: "50px"
+}}>
+
+    <h2>
+        Department Staff Intelligence
+    </h2>
+
+    <table
+        border="1"
+        cellPadding="12"
+        width="100%"
+    >
+
+        <thead>
+
+            <tr>
+                <th>Department</th>
+                <th>Staff Count</th>
+                <th>Avg Attendance</th>
+                <th>Avg Workload</th>
+                <th>Avg Productivity</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {departmentStats.map(
+                (item) => (
+
+                    <tr key={item.department}>
+
+                        <td>
+                            <strong>
+                                {item.department}
+                            </strong>
+                        </td>
+
+                        <td>
+                            {item.count}
+                        </td>
+
+                        <td>
+                            {item.attendance.toFixed(1)}%
+                        </td>
+
+                        <td>
+                            {item.workload.toFixed(1)}%
+                        </td>
+
+                        <td>
+                            {item.productivity.toFixed(1)}%
+                        </td>
+
+                    </tr>
+
+                )
+            )}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{/* STAFF OPERATIONAL ALERTS */}
+
+<div style={{
+    marginTop: "50px",
+    marginBottom: "30px"
+}}>
+
+    <h2>
+        Staff Operational Alerts
+    </h2>
+
+    {highWorkloadStaff > 0 && (
+        <p>
+            ⚠️ {highWorkloadStaff} staff member(s)
+            have workload above 80%.
+        </p>
+    )}
+
+    {lowAttendanceStaff > 0 && (
+        <p>
+            ⚠️ {lowAttendanceStaff} staff member(s)
+            have attendance below 75%.
+        </p>
+    )}
+
+    {lowProductivityStaff > 0 && (
+        <p>
+            ⚠️ {lowProductivityStaff} staff member(s)
+            have productivity below 60%.
+        </p>
+    )}
+
+    {highWorkloadStaff === 0 &&
+        lowAttendanceStaff === 0 &&
+        lowProductivityStaff === 0 && (
+            <p>
+                ✅ No staff operational alerts currently.
+            </p>
+        )}
+
+</div>
 
             {/* STAFF PERFORMANCE */}
 
