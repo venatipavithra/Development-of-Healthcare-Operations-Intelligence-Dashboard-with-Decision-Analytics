@@ -293,6 +293,58 @@ function Billing() {
     const outstandingAmount =
         totalBilled - totalRevenue;
 
+        // REVENUE COLLECTION ANALYSIS
+
+const collectionRate =
+    totalBilled > 0
+        ? (totalRevenue / totalBilled) * 100
+        : 0;
+
+const pendingAmount = bills
+    .filter(
+        (bill) =>
+            bill.paymentStatus === "Pending"
+    )
+    .reduce(
+        (sum, bill) =>
+            sum + Number(bill.amount || 0),
+        0
+    );
+
+const partialAmount = bills
+    .filter(
+        (bill) =>
+            bill.paymentStatus === "Partial"
+    )
+    .reduce(
+        (sum, bill) =>
+            sum + Number(
+                bill.amount || 0
+            ) -
+            Number(
+                bill.paidAmount || 0
+            ),
+        0
+    );
+
+    // REVENUE ALERTS
+
+const pendingBills = bills.filter(
+    (bill) =>
+        bill.paymentStatus === "Pending"
+).length;
+
+const partialBills = bills.filter(
+    (bill) =>
+        bill.paymentStatus === "Partial"
+).length;
+
+const highOutstandingBills = bills.filter(
+    (bill) =>
+        Number(bill.amount || 0) -
+        Number(bill.paidAmount || 0) > 10000
+).length;
+
 
     return (
 
@@ -397,6 +449,110 @@ function Billing() {
                 </div>
 
             </div>
+
+            {/* COLLECTION ANALYSIS */}
+
+<div style={{
+    display: "flex",
+    gap: "20px",
+    flexWrap: "wrap",
+    marginTop: "20px",
+    marginBottom: "30px"
+}}>
+
+    <div style={{
+        border: "1px solid #ccc",
+        padding: "20px",
+        width: "200px",
+        borderRadius: "10px"
+    }}>
+
+        <h3>Collection Rate</h3>
+
+        <h1>
+            {collectionRate.toFixed(1)}%
+        </h1>
+
+    </div>
+
+
+    <div style={{
+        border: "1px solid #ccc",
+        padding: "20px",
+        width: "200px",
+        borderRadius: "10px"
+    }}>
+
+        <h3>Pending Amount</h3>
+
+        <h1>
+            ₹{pendingAmount.toLocaleString()}
+        </h1>
+
+    </div>
+
+
+    <div style={{
+        border: "1px solid #ccc",
+        padding: "20px",
+        width: "200px",
+        borderRadius: "10px"
+    }}>
+
+        <h3>Partial Outstanding</h3>
+
+        <h1>
+            ₹{partialAmount.toLocaleString()}
+        </h1>
+
+    </div>
+
+</div>
+
+{/* REVENUE ALERTS */}
+
+<div style={{
+    marginTop: "30px",
+    marginBottom: "30px",
+    border: "1px solid #ccc",
+    padding: "20px",
+    borderRadius: "10px"
+}}>
+
+    <h2>
+        Revenue Alerts
+    </h2>
+
+    {pendingBills > 0 && (
+        <p>
+            ⚠️ {pendingBills} pending bill(s)
+            require payment follow-up.
+        </p>
+    )}
+
+    {partialBills > 0 && (
+        <p>
+            ⚠️ {partialBills} bill(s)
+            have partial payments.
+        </p>
+    )}
+
+    {highOutstandingBills > 0 && (
+        <p>
+            ⚠️ {highOutstandingBills} bill(s)
+            have outstanding amounts above ₹10,000.
+        </p>
+    )}
+
+    {pendingBills === 0 &&
+        partialBills === 0 &&
+        highOutstandingBills === 0 && (
+            <p>
+                ✅ No revenue alerts currently.
+            </p>
+        )}
+
+</div>
 
 
             {/* BILL FORM */}
@@ -898,6 +1054,109 @@ function Billing() {
 
                         <td>
                             ₹{collected.toLocaleString()}
+                        </td>
+
+                    </tr>
+
+                );
+
+            })}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{/* PROVIDER REVENUE ANALYSIS */}
+
+<div style={{
+    marginTop: "50px"
+}}>
+
+    <h2>
+        Provider Revenue Analysis
+    </h2>
+
+    <table
+        border="1"
+        cellPadding="10"
+        width="100%"
+    >
+
+        <thead>
+
+            <tr>
+                <th>Provider</th>
+                <th>Number of Bills</th>
+                <th>Total Billed</th>
+                <th>Total Collected</th>
+                <th>Outstanding</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {[
+                ...new Set(
+                    bills.map(
+                        (bill) => bill.provider
+                    )
+                )
+            ].map((provider) => {
+
+                const providerBills =
+                    bills.filter(
+                        (bill) =>
+                            bill.provider === provider
+                    );
+
+                const billed =
+                    providerBills.reduce(
+                        (sum, bill) =>
+                            sum +
+                            Number(
+                                bill.amount || 0
+                            ),
+                        0
+                    );
+
+                const collected =
+                    providerBills.reduce(
+                        (sum, bill) =>
+                            sum +
+                            Number(
+                                bill.paidAmount || 0
+                            ),
+                        0
+                    );
+
+                const outstanding =
+                    billed - collected;
+
+                return (
+
+                    <tr key={provider}>
+
+                        <td>
+                            {provider}
+                        </td>
+
+                        <td>
+                            {providerBills.length}
+                        </td>
+
+                        <td>
+                            ₹{billed.toLocaleString()}
+                        </td>
+
+                        <td>
+                            ₹{collected.toLocaleString()}
+                        </td>
+
+                        <td>
+                            ₹{outstanding.toLocaleString()}
                         </td>
 
                     </tr>
