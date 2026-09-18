@@ -4,6 +4,7 @@ import Dashboard from "./Dashboard";
 import Patient from "./Patient";
 import Staff from "./Staff";
 import Billing from "./Billing";
+import Claims from "./Claims";
 import Sidebar from "./Sidebar";
 
 function App() {
@@ -25,7 +26,11 @@ function App() {
         }
 
         if (page === "billing") {
-             return <Billing />;
+            return <Billing />;
+        }
+
+        if (page === "claims") {
+            return <Claims />;
         }
 
         return (
