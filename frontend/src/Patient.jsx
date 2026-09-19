@@ -189,6 +189,11 @@ const dischargedPatients = patients.filter(
         patient.admissionStatus === "Discharged"
 ).length;
 
+const scheduledAppointments = patients.filter(
+    (patient) =>
+        patient.appointmentStatus === "Scheduled"
+).length;
+
 const completedAppointments = patients.filter(
     (patient) =>
         patient.appointmentStatus === "Completed"
@@ -234,6 +239,37 @@ const averageLengthOfStay =
     totalPatients > 0
         ? totalLengthOfStay / totalPatients
         : 0;
+
+        const maximumLengthOfStay =
+    patients.length > 0
+        ? Math.max(
+            ...patients.map(
+                (patient) =>
+                    Number(patient.lengthOfStay || 0)
+            )
+        )
+        : 0;
+
+const patientsWithLongStay = patients.filter(
+    (patient) =>
+        Number(patient.lengthOfStay || 0) > 7
+).length;
+
+        // AGE GROUP ANALYSIS
+
+const childrenPatients = patients.filter(
+    (patient) => Number(patient.age) < 18
+).length;
+
+const adultPatients = patients.filter(
+    (patient) =>
+        Number(patient.age) >= 18 &&
+        Number(patient.age) < 60
+).length;
+
+const seniorPatients = patients.filter(
+    (patient) => Number(patient.age) >= 60
+).length;
 
         // PATIENT FLOW ANALYSIS
 
@@ -397,6 +433,436 @@ const outpatientPatients = patients.filter(
 
 </div>
 
+{/* AGE GROUP ANALYSIS */}
+
+<div
+    style={{
+        marginBottom: "40px",
+        border: "1px solid #ccc",
+        padding: "20px",
+        borderRadius: "10px"
+    }}
+>
+
+    <h2>
+        Patient Age Group Analysis
+    </h2>
+
+    <table
+        border="1"
+        cellPadding="12"
+        width="100%"
+    >
+
+        <thead>
+
+            <tr>
+                <th>Age Group</th>
+                <th>Patient Count</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            <tr>
+                <td>Children (Below 18)</td>
+                <td>{childrenPatients}</td>
+            </tr>
+
+            <tr>
+                <td>Adults (18–59)</td>
+                <td>{adultPatients}</td>
+            </tr>
+
+            <tr>
+                <td>Seniors (60+)</td>
+                <td>{seniorPatients}</td>
+            </tr>
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{/* DEPARTMENT PATIENT ANALYSIS */}
+
+<div
+    style={{
+        marginBottom: "40px",
+        border: "1px solid #ccc",
+        padding: "20px",
+        borderRadius: "10px"
+    }}
+>
+
+    <h2>
+        Department-wise Patient Analysis
+    </h2>
+
+    <table
+        border="1"
+        cellPadding="12"
+        width="100%"
+    >
+
+        <thead>
+
+            <tr>
+                <th>Department</th>
+                <th>Patient Count</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {[...new Set(
+                patients.map(
+                    (patient) => patient.department
+                )
+            )].map((department) => {
+
+                const count = patients.filter(
+                    (patient) =>
+                        patient.department === department
+                ).length;
+
+                return (
+                    <tr key={department}>
+
+                        <td>
+                            {department}
+                        </td>
+
+                        <td>
+                            {count}
+                        </td>
+
+                    </tr>
+                );
+
+            })}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{/* GENDER ANALYSIS */}
+
+<div
+    style={{
+        marginBottom: "40px",
+        border: "1px solid #ccc",
+        padding: "20px",
+        borderRadius: "10px"
+    }}
+>
+
+    <h2>
+        Patient Gender Analysis
+    </h2>
+
+    <table
+        border="1"
+        cellPadding="12"
+        width="100%"
+    >
+
+        <thead>
+
+            <tr>
+                <th>Gender</th>
+                <th>Patient Count</th>
+                <th>Percentage</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            <tr>
+
+                <td>Male</td>
+
+                <td>
+                    {malePatients}
+                </td>
+
+                <td>
+                    {totalPatients > 0
+                        ? ((malePatients / totalPatients) * 100).toFixed(1)
+                        : 0}%
+                </td>
+
+            </tr>
+
+            <tr>
+
+                <td>Female</td>
+
+                <td>
+                    {femalePatients}
+                </td>
+
+                <td>
+                    {totalPatients > 0
+                        ? ((femalePatients / totalPatients) * 100).toFixed(1)
+                        : 0}%
+                </td>
+
+            </tr>
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{/* APPOINTMENT STATUS ANALYSIS */}
+
+<div
+    style={{
+        marginBottom: "40px",
+        border: "1px solid #ccc",
+        padding: "20px",
+        borderRadius: "10px"
+    }}
+>
+
+    <h2>
+        Appointment Status Analysis
+    </h2>
+
+    <table
+        border="1"
+        cellPadding="12"
+        width="100%"
+    >
+
+        <thead>
+
+            <tr>
+                <th>Appointment Status</th>
+                <th>Patient Count</th>
+                <th>Percentage</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            <tr>
+                <td>Scheduled</td>
+
+                <td>
+                    {scheduledAppointments}
+                </td>
+
+                <td>
+                    {totalPatients > 0
+                        ? ((scheduledAppointments / totalPatients) * 100).toFixed(1)
+                        : 0}%
+                </td>
+            </tr>
+
+            <tr>
+                <td>Completed</td>
+
+                <td>
+                    {completedAppointments}
+                </td>
+
+                <td>
+                    {totalPatients > 0
+                        ? ((completedAppointments / totalPatients) * 100).toFixed(1)
+                        : 0}%
+                </td>
+            </tr>
+
+            <tr>
+                <td>Cancelled</td>
+
+                <td>
+                    {cancelledAppointments}
+                </td>
+
+                <td>
+                    {totalPatients > 0
+                        ? ((cancelledAppointments / totalPatients) * 100).toFixed(1)
+                        : 0}%
+                </td>
+            </tr>
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{/* LENGTH OF STAY ANALYSIS */}
+
+<div
+    style={{
+        marginBottom: "40px",
+        border: "1px solid #ccc",
+        padding: "20px",
+        borderRadius: "10px"
+    }}
+>
+
+    <h2>
+        Length of Stay Analysis
+    </h2>
+
+    <table
+        border="1"
+        cellPadding="12"
+        width="100%"
+    >
+
+        <thead>
+
+            <tr>
+                <th>Metric</th>
+                <th>Value</th>
+                <th>Status</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            <tr>
+                <td>Average Length of Stay</td>
+
+                <td>
+                    {averageLengthOfStay.toFixed(1)} days
+                </td>
+
+                <td>
+                    Normal
+                </td>
+            </tr>
+
+            <tr>
+                <td>Maximum Length of Stay</td>
+
+                <td>
+                    {maximumLengthOfStay} days
+                </td>
+
+                <td>
+                    {maximumLengthOfStay > 14
+                        ? "Attention Required"
+                        : "Normal"}
+                </td>
+            </tr>
+
+            <tr>
+                <td>Patients Staying Over 7 Days</td>
+
+                <td>
+                    {patientsWithLongStay}
+                </td>
+
+                <td>
+                    {patientsWithLongStay > 0
+                        ? "Monitor"
+                        : "Normal"}
+                </td>
+            </tr>
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{/* PATIENT OPERATIONS SUMMARY */}
+
+<div
+    style={{
+        marginBottom: "40px",
+        border: "1px solid #ccc",
+        padding: "20px",
+        borderRadius: "10px"
+    }}
+>
+
+    <h2>
+        Patient Operations Summary
+    </h2>
+
+    <table
+        border="1"
+        cellPadding="12"
+        width="100%"
+    >
+
+        <thead>
+
+            <tr>
+                <th>Operational Metric</th>
+                <th>Value</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            <tr>
+                <td>Total Patients</td>
+                <td>{totalPatients}</td>
+            </tr>
+
+            <tr>
+                <td>Admitted Patients</td>
+                <td>{admittedPatients}</td>
+            </tr>
+
+            <tr>
+                <td>Discharged Patients</td>
+                <td>{dischargedPatients}</td>
+            </tr>
+
+            <tr>
+                <td>Average Waiting Time</td>
+                <td>
+                    {averageWaitingTime.toFixed(1)} minutes
+                </td>
+            </tr>
+
+            <tr>
+                <td>Average Length of Stay</td>
+                <td>
+                    {averageLengthOfStay.toFixed(1)} days
+                </td>
+            </tr>
+
+            <tr>
+                <td>Completed Appointments</td>
+                <td>{completedAppointments}</td>
+            </tr>
+
+            <tr>
+                <td>Cancelled Appointments</td>
+                <td>{cancelledAppointments}</td>
+            </tr>
+
+            <tr>
+                <td>Emergency Patients</td>
+                <td>{emergencyPatients}</td>
+            </tr>
+
+        </tbody>
+
+    </table>
+
+</div>
 
 {/* PATIENT FLOW ANALYSIS */}
 
@@ -424,6 +890,7 @@ const outpatientPatients = patients.filter(
             <tr>
                 <th>Flow Type</th>
                 <th>Patient Count</th>
+                <th>Percentage</th>
             </tr>
 
         </thead>
@@ -433,16 +900,31 @@ const outpatientPatients = patients.filter(
             <tr>
                 <td>OPD Visits</td>
                 <td>{opdPatients}</td>
+<td>
+    {totalPatients > 0
+        ? ((opdPatients / totalPatients) * 100).toFixed(1)
+        : 0}%
+</td>
             </tr>
 
             <tr>
                 <td>IPD Admissions</td>
                 <td>{ipdPatients}</td>
+<td>
+    {totalPatients > 0
+        ? ((ipdPatients / totalPatients) * 100).toFixed(1)
+        : 0}%
+</td>
             </tr>
 
             <tr>
                 <td>Emergency Visits</td>
                 <td>{emergencyPatients}</td>
+<td>
+    {totalPatients > 0
+        ? ((emergencyPatients / totalPatients) * 100).toFixed(1)
+        : 0}%
+</td>
             </tr>
 
             <tr>
